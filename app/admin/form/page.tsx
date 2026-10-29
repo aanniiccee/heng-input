@@ -1,7 +1,7 @@
 "use client";
 
 export const dynamic = "force-dynamic";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { 
@@ -35,7 +35,7 @@ interface Transaction {
   transaction_pawn?: PawnDetail[] | PawnDetail;
 }
 
-export default function PawnUpdateFormPage() {
+function PawnFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -518,5 +518,13 @@ export default function PawnUpdateFormPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function PawnUpdateFormPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">กำลังโหลด...</div>}>
+      <PawnFormContent />
+    </Suspense>
   );
 }

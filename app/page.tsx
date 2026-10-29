@@ -12,7 +12,6 @@ function RedeemContent() {
   const [unauthorized, setUnauthorized] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   
-  // Ref ล็อคป้องกันไม่ให้ยิง Request ซ้ำสองรอบ
   const isVerifying = useRef(false);
 
   const extractInviteCode = (): string => {
@@ -31,7 +30,6 @@ function RedeemContent() {
   };
 
   useEffect(() => {
-    // ถ้ายิงย้อนกลับมา หรือกำลังรันอยู่แล้ว ให้ข้ามทันที
     if (isVerifying.current) return;
     isVerifying.current = true;
 
@@ -68,10 +66,12 @@ function RedeemContent() {
         const result = await res.json();
 
         if (result.success && result.is_admin) {
+          // บันทึก Session ให้ครบถ้วนตามที่หน้า Admin Form ต้องการใช้งาน
           sessionStorage.setItem('admin_verified', 'true');
-          sessionStorage.setItem('line_user_id', userProfile.userId);
+          sessionStorage.setItem('admin_line_id', userProfile.userId);
+          sessionStorage.setItem('admin_name', userProfile.displayName);
           
-          // พา Redirect ไปหน้า Form ทันที
+          // พา Redirect ไปหน้า Form ทันทีโดยใช้ replace เพื่อไม่ให้กด Back กลับมาหน้าเช็คซ้ำ
           router.replace('/admin/form');
         } else {
           setUnauthorized(true);
@@ -112,7 +112,7 @@ function RedeemContent() {
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">ไม่มีสิทธิ์เข้าถึงระบบ</h1>
           <p className="text-sm text-gray-600 mb-6">
-            ลิงก์เชิญนี้ถูกใช้งานไปแล้ว หมดอายุ หรือบัญชี LINE ของคุณไม่ได้รับสิทธิ์ Admin
+            บัญชี LINE ของคุณยังไม่ได้รับสิทธิ์ Admin หรือลิงก์เชิญหมดอายุแล้ว
           </p>
           <button
             onClick={() => liff.closeWindow()}

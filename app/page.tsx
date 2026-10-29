@@ -115,7 +115,7 @@ function RedeemContent() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
           <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-green-600 border-r-transparent"></div>
-          <h2 className="mt-4 text-lg font-semibold text-gray-800">กำลังตรวจสอบสิทธิ์ผู้ดูแลระบบ...</h2>
+          <h2 className="mt-4 text-lg font-semibold text-gray-800">กำลังตรวจสอบสิทธิ์...</h2>
           <p className="mt-1 text-sm text-gray-500">กรุณารอสักครู่ ระบบกำลังยืนยันตัวตนผ่าน LINE</p>
           {errorMessage && <p className="mt-2 text-sm text-red-500">{errorMessage}</p>}
         </div>

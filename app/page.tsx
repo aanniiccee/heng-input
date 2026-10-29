@@ -4,12 +4,6 @@ import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import liff from '@line/liff';
 
-interface LineProfile {
-  userId: string;
-  displayName: string;
-  pictureUrl?: string;
-}
-
 function RedeemContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -17,9 +11,10 @@ function RedeemContent() {
   const [loading, setLoading] = useState(true);
   const [unauthorized, setUnauthorized] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const liffInitialized = useRef(false);
+  
+  // Ref ล็อคป้องกันไม่ให้ยิง Request ซ้ำสองรอบ
+  const isVerifying = useRef(false);
 
-  // ฟังก์ชันดึง Invite Code จาก URL หรือ liff.state
   const extractInviteCode = (): string => {
     let code = searchParams.get('code');
     if (!code) {
@@ -36,8 +31,9 @@ function RedeemContent() {
   };
 
   useEffect(() => {
-    if (liffInitialized.current) return;
-    liffInitialized.current = true;
+    // ถ้ายิงย้อนกลับมา หรือกำลังรันอยู่แล้ว ให้ข้ามทันที
+    if (isVerifying.current) return;
+    isVerifying.current = true;
 
     const code = extractInviteCode();
 
@@ -59,7 +55,6 @@ function RedeemContent() {
 
         const userProfile = await liff.getProfile();
 
-        // ส่งข้อมูลไปตรวจเช็คและ Auto-Redeem ทันทีหลัง LIFF Login สำเร็จ
         const res = await fetch('/api/redeem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -73,12 +68,12 @@ function RedeemContent() {
         const result = await res.json();
 
         if (result.success && result.is_admin) {
-          // ผ่านสิทธิ์แล้ว -> บันทึก Session แล้ว Redirect ไปหน้า Form ทันทีโดยไม่ต้องกรอกอะไร
           sessionStorage.setItem('admin_verified', 'true');
           sessionStorage.setItem('line_user_id', userProfile.userId);
+          
+          // พา Redirect ไปหน้า Form ทันที
           router.replace('/admin/form');
         } else {
-          // ไม่มีสิทธิ์ / Code ไม่ถูกต้อง / ถูกใช้ไปแล้ว
           setUnauthorized(true);
           setLoading(false);
         }
@@ -93,21 +88,19 @@ function RedeemContent() {
     initLiffAndVerify();
   }, [searchParams, router]);
 
-  // หน้าจอ Loading ระหว่างเช็คสิทธิ์และทำ Auto-Redeem
   if (loading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
         <div className="text-center">
           <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-green-600 border-r-transparent"></div>
           <h2 className="mt-4 text-lg font-semibold text-gray-800">กำลังตรวจสอบสิทธิ์ผู้ดูแลระบบ...</h2>
-          <p className="mt-1 text-sm text-gray-500">กรุณารอMสักครู่ ระบบกำลังยืนยันตัวตนผ่าน LINE</p>
+          <p className="mt-1 text-sm text-gray-500">กรุณารอสักครู่ ระบบกำลังยืนยันตัวตนผ่าน LINE</p>
           {errorMessage && <p className="mt-2 text-sm text-red-500">{errorMessage}</p>}
         </div>
       </div>
     );
   }
 
-  // หน้าจอแสดงผลกรณี "ไม่มีสิทธิ์เข้าถึง"
   if (unauthorized) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-50">

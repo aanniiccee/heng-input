@@ -1,11 +1,10 @@
 'use client';
 
 import { useEffect, useState, useRef, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import liff from '@line/liff';
 
 function RedeemContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [loading, setLoading] = useState(true);
@@ -66,13 +65,13 @@ function RedeemContent() {
         const result = await res.json();
 
         if (result.success && result.is_admin) {
-          // บันทึก Session ให้ครบถ้วนตามที่หน้า Admin Form ต้องการใช้งาน
+          // 1. บันทึก Session ให้ครบถ้วน
           sessionStorage.setItem('admin_verified', 'true');
           sessionStorage.setItem('admin_line_id', userProfile.userId);
           sessionStorage.setItem('admin_name', userProfile.displayName);
           
-          // พา Redirect ไปหน้า Form ทันทีโดยใช้ replace เพื่อไม่ให้กด Back กลับมาหน้าเช็คซ้ำ
-          router.replace('/admin/form');
+          // 2. ใช้ Native Redirect ตรงๆ (แก้ปัญหา router ไม่ยอมเปลี่ยนหน้า)
+          window.location.href = '/admin/form';
         } else {
           setUnauthorized(true);
           setLoading(false);
@@ -86,7 +85,7 @@ function RedeemContent() {
     };
 
     initLiffAndVerify();
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   if (loading) {
     return (

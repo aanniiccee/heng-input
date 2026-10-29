@@ -19,12 +19,29 @@ function RedeemContent() {
       const liffState = searchParams.get('liff.state');
       if (liffState) {
         const decodedState = decodeURIComponent(liffState);
-        const match = decodedState.match(/code=([^&]+)/);
+        const match = decodedState.match(/code=([^&]+)/i);
         if (match && match[1]) {
           code = match[1];
         }
       }
     }
+
+    if (!code && typeof window !== 'undefined') {
+      const fullUrl = window.location.href;
+      const urlParams = new URLSearchParams(fullUrl.split('?')[1]);
+      code = urlParams.get('code');
+
+      if (!code) {
+        const referrer = searchParams.get('liff.referrer');
+        if (referrer) {
+          const matchRef = referrer.match(/code=([^&]+)/i);
+          if (matchRef && matchRef[1]) {
+            code = matchRef[1];
+          }
+        }
+      }
+    }
+
     return code ? code.trim().toUpperCase() : '';
   };
 
@@ -70,7 +87,13 @@ function RedeemContent() {
           sessionStorage.setItem('admin_line_id', userProfile.userId);
           sessionStorage.setItem('admin_name', userProfile.displayName);
           
-          // 2. ใช้ Native Redirect ตรงๆ (แก้ปัญหา router ไม่ยอมเปลี่ยนหน้า)
+          // 2. เคลียร์ Query Parameter ออกจาก URL ทันทีไม่ให้ติด Code เดิมค้าง
+          if (typeof window !== 'undefined') {
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+          }
+
+          // 3. พา Redirect ไปหน้า Form
           window.location.href = '/admin/form';
         } else {
           setUnauthorized(true);

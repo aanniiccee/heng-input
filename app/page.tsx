@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation'; // <-- เพิ่ม useSearchParams
 import liff from '@line/liff';
+import { Suspense } from 'react';
 
 interface LineProfile {
   userId: string;
@@ -10,8 +11,11 @@ interface LineProfile {
   pictureUrl?: string;
 }
 
-export default function RedeemPage() {
+// แยก Component หลักออกมารองรับ Suspense (กฎของ Next.js App Router เมื่อใช้ useSearchParams)
+function RedeemContent() {
   const router = useRouter();
+  const searchParams = useSearchParams(); // <-- เรียกใช้งาน SearchParams
+  
   const [profile, setProfile] = useState<LineProfile | null>(null);
   const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(true);
@@ -19,11 +23,17 @@ export default function RedeemPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    // ดึงค่า code จาก URL ทันทีที่โหลดหน้าเว็บ (เช่น ?code=ABC123XY)
+    const codeFromUrl = searchParams.get('code');
+    if (codeFromUrl) {
+      setInviteCode(codeFromUrl.toUpperCase());
+    }
+
     const initLiff = async () => {
       try {
         const liffId = process.env.NEXT_PUBLIC_LIFF_ID;
         if (!liffId) {
-          setErrorMessage('ไม่พบค่า NEXT_PUBLIC_LIFF_ID ใน Environment Variables');
+          setErrorMessage('ไม่พบค่า NEXT_PUBLIC_LIFF_ID');
           setLoading(false);
           return;
         }
@@ -50,7 +60,7 @@ export default function RedeemPage() {
     };
 
     initLiff();
-  }, []);
+  }, [searchParams]);
 
   const handleRedeem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,5 +165,14 @@ export default function RedeemPage() {
         </form>
       </div>
     </main>
+  );
+}
+
+// ห่อด้วย Suspense ตามข้อกำหนดของ Next.js App Router
+export default function RedeemPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+      <RedeemContent />
+    </Suspense>
   );
 }

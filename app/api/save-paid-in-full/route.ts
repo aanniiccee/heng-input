@@ -2,6 +2,26 @@ import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { Readable } from "stream";
 
+// ฟังก์ชันช่วยจัดรูปแบบ Private Key ให้ถูกต้องตรงตามมาตรฐาน OpenSSL PEM
+function formatPrivateKey(key?: string): string {
+  if (!key) return "";
+  
+  let formatted = key.trim();
+
+  // ปลดเครื่องหมายคำพูดเปิด-ปิด (ถ้่ามีครอบอยู่)
+  if (
+    (formatted.startsWith('"') && formatted.endsWith('"')) ||
+    (formatted.startsWith("'") && formatted.endsWith("'"))
+  ) {
+    formatted = formatted.slice(1, -1);
+  }
+
+  // แปลง literal "\n" เป็น character ขึ้นบรรทัดใหม่จริง
+  formatted = formatted.replace(/\\n/g, "\n");
+
+  return formatted;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -23,9 +43,10 @@ export async function POST(req: Request) {
     } = body;
 
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    const rawPrivateKey = process.env.GOOGLE_PRIVATE_KEY;
+    const privateKey = formatPrivateKey(rawPrivateKey);
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
-    const driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID; // ID โฟลเดอร์ใน Drive ที่สร้างเตรียมไว้
+    const driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
 
     if (!clientEmail || !privateKey || !spreadsheetId) {
       return NextResponse.json(
@@ -45,7 +66,7 @@ export async function POST(req: Request) {
 
     let slipDriveUrl = "-";
 
-    // 1. อัปโหลดรูปสลิปขึ้น Google Drive (ถ้ามีการแนบสลิปมา)
+    // 1. อัปโหลดรูปสลิปขึ้น Google Drive
     if (slipBase64) {
       const drive = google.drive({ version: "v3", auth });
 
@@ -73,7 +94,6 @@ export async function POST(req: Request) {
         fields: "id, webViewLink",
       });
 
-      // ปรับสิทธิ์ให้ทุกคนที่มีลิงก์สามารถเปิดดูสลิปภาพนี้ได้
       if (driveFile.data.id) {
         await drive.permissions.create({
           fileId: driveFile.data.id,
@@ -87,7 +107,7 @@ export async function POST(req: Request) {
       slipDriveUrl = driveFile.data.webViewLink || "-";
     }
 
-    // 2. บันทึกข้อมูลทั้งหมดลง Google Sheets แท็บ full_paid_input
+    // 2. บันทึกข้อมูลลง Google Sheets แท็บ full_paid_input
     const sheets = google.sheets({ version: "v4", auth });
 
     const createdAt = new Date().toLocaleString("th-TH", {
@@ -104,7 +124,7 @@ export async function POST(req: Request) {
       deliveryMethod,
       pickupDate,
       shippingAddress,
-      slipDriveUrl, // ใส่ URL ลิงก์สลิปจาก Google Drive ตรงนี้
+      slipDriveUrl,
       transferDate,
       note,
       adminName,
@@ -112,7 +132,7 @@ export async function POST(req: Request) {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "full_paid_input!A:M", // บันทึกเข้าแท็บ full_paid_input
+      range: "full_paid_input!A:M",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [newRow],

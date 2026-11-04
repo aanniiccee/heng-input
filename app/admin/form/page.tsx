@@ -5,27 +5,13 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Save, Loader2, CheckCircle2 } from "lucide-react";
 
-interface Transaction {
-  transaction_id: string;
-  product: string;
-  customer_name: string;
-  phone_number?: string;
-  channel?: string;
-  note?: string;
-}
-
 function PaidInFullFormContent() {
   const searchParams = useSearchParams();
-
   const token = searchParams.get("token") || "";
-  const admJobFromUrl = searchParams.get("adm_job")?.trim() || "";
 
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form Fields
-  const [admJobId, setAdmJobId] = useState("");
+  // Form Fields (ถอด admJobId ออกเรียบร้อยแล้ว)
   const [product, setProduct] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
@@ -37,8 +23,6 @@ function PaidInFullFormContent() {
   const [transferSlip, setTransferSlip] = useState<File | null>(null);
   const [transferDate, setTransferDate] = useState("");
   const [note, setNote] = useState("");
-
-  const todayStr = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     const adminName = sessionStorage.getItem("admin_name");
@@ -52,87 +36,67 @@ function PaidInFullFormContent() {
         currentParams.toString();
       return;
     }
-
-    loadData();
   }, [token]);
-
-  useEffect(() => {
-    if (admJobFromUrl) {
-      setAdmJobId(admJobFromUrl);
-    }
-  }, [admJobFromUrl]);
-
-  useEffect(() => {
-    if (admJobId && allTransactions.length > 0) {
-      const found = allTransactions.find((x) => x.transaction_id === admJobId);
-      if (found) {
-        setProduct(found.product || "");
-        setCustomerName(found.customer_name || "");
-      }
-    }
-  }, [admJobId, allTransactions]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const adminLineId = sessionStorage.getItem("admin_line_id") || "";
-      const apiUrl = `/api/pawn-transactions?token=${token}&admin_line_id=${adminLineId}`;
-      const r = await fetch(apiUrl);
-      if (r.ok) {
-        const data = await r.json();
-        setAllTransactions(data);
-      }
-    } catch (err) {
-      console.error("Error loading data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!admJobId) {
-      alert("กรุณาระบุ ADM Job ID");
-      return;
-    }
-
     setIsSubmitting(true);
+
     const adminLineId = sessionStorage.getItem("admin_line_id") || "Unknown";
     const adminName = sessionStorage.getItem("admin_name") || "Unknown";
 
-    const formData = new FormData();
-    formData.append("adm_job_id", admJobId);
-    formData.append("product", product);
-    formData.append("customer_name", customerName);
-    formData.append("company_phone", companyPhone);
-    formData.append("selling_price", sellingPrice);
-    formData.append("channel", channel);
-    formData.append("delivery_method", deliveryMethod);
-    formData.append("pickup_date", deliveryMethod === "หน้าร้าน" ? pickupDate : "");
-    formData.append("shipping_address", deliveryMethod === "จัดส่ง" ? shippingAddress : "");
-    formData.append("transfer_date", transferDate);
-    formData.append("note", note);
-    formData.append("created_by_line_id", adminLineId);
-    formData.append("created_by_name", adminName);
-    if (transferSlip) {
-      formData.append("transfer_slip", transferSlip);
-    }
-
     try {
-      const response = await fetch(
-        `/api/paid-in-full/${encodeURIComponent(admJobId)}?token=${token}&admin_line_id=${adminLineId}`,
-        {
-          method: "PUT",
-          body: formData,
-        }
-      );
+      // แปลงไฟล์สลิปเป็น Base64 (ถ้ามี) เพื่อส่งไปยัง API Route ได้ง่ายขึ้น
+      let slipBase64 = "";
+      let slipFileName = "";
+      if (transferSlip) {
+        slipFileName = transferSlip.name;
+        slipBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(transferSlip);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (error) => reject(error);
+        });
+      }
+
+      const payload = {
+        product,
+        customerName,
+        companyPhone,
+        sellingPrice,
+        channel,
+        deliveryMethod,
+        pickupDate: deliveryMethod === "หน้าร้าน" ? pickupDate : "",
+        shippingAddress: deliveryMethod === "จัดส่ง" ? shippingAddress : "",
+        transferDate,
+        slipFileName,
+        slipBase64,
+        note,
+        adminName,
+        adminLineId,
+      };
+
+      const response = await fetch("/api/save-paid-in-full", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       if (response.ok) {
-        alert("บันทึกข้อมูลสำเร็จ!");
-        await loadData();
+        alert("บันทึกข้อมูลลง Google Sheets สำเร็จ!");
+        // รีเซ็ตฟอร์ม
+        setProduct("");
+        setCustomerName("");
+        setCompanyPhone("");
+        setSellingPrice("");
+        setPickupDate("");
+        setShippingAddress("");
+        setTransferSlip(null);
+        setTransferDate("");
+        setNote("");
       } else {
         const err = await response.json();
-        alert("เกิดข้อผิดพลาด: " + (err.detail || "ไม่สามารถบันทึกได้"));
+        alert("เกิดข้อผิดพลาด: " + (err.error || "ไม่สามารถบันทึกข้อมูลได้"));
       }
     } catch (error) {
       console.error(error);
@@ -147,9 +111,9 @@ function PaidInFullFormContent() {
       <div className="max-w-xl mx-auto">
         {/* Header จ่ายครบ */}
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">Header จ่ายครบ</h2>
+          <h2 className="text-2xl font-bold text-slate-900">ฟอร์มจ่ายครบ</h2>
           <p className="text-xs text-slate-500 mt-1">
-            บันทึกข้อมูลการชำระเงินครบถ้วนและรายละเอียดการส่งมอบสินค้า
+            บันทึกข้อมูลการชำระเงินครบถ้วนและรายละเอียดการส่งมอบ
           </p>
         </div>
 
@@ -160,40 +124,10 @@ function PaidInFullFormContent() {
               <CheckCircle2 size={20} className="text-emerald-400" />
               <span className="font-semibold">แบบฟอร์มข้อมูลการจ่ายครบ</span>
             </div>
-            <span className="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded-full text-slate-300">
-              {admJobId ? `Job: ${admJobId}` : "รอระบุ Job ID"}
-            </span>
           </div>
 
           <div className="p-6">
-            {!admJobFromUrl && !admJobId && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm flex items-start gap-3">
-                <span className="text-lg">⚠️</span>
-                <div>
-                  <span className="font-semibold block mb-0.5">
-                    ยังไม่ได้เลือก ADM Job ID
-                  </span>
-                  กรุณาระบุรหัส `adm_job` ผ่าน URL Parameter หรือป้อนรหัสในช่อง ADM Job ID ด้านล่าง
-                </div>
-              </div>
-            )}
-
             <form onSubmit={handleFormSubmit} className="space-y-4">
-              {/* ADM Job ID */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  ADM Job ID <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                  required
-                  placeholder="ระบุ ADM Job ID"
-                  value={admJobId}
-                  onChange={(e) => setAdmJobId(e.target.value)}
-                />
-              </div>
-
               {/* Product Code & Customer Name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -202,11 +136,11 @@ function PaidInFullFormContent() {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                     required
-                    readOnly
-                    placeholder="ดึงจาก Job ID..."
+                    placeholder="ระบุรหัสสินค้า"
                     value={product}
+                    onChange={(e) => setProduct(e.target.value)}
                   />
                 </div>
                 <div>
@@ -215,11 +149,11 @@ function PaidInFullFormContent() {
                   </label>
                   <input
                     type="text"
-                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                     required
-                    readOnly
-                    placeholder="ดึงจาก Job ID..."
+                    placeholder="ระบุชื่อลูกค้า"
                     value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
                   />
                 </div>
               </div>
@@ -364,11 +298,11 @@ function PaidInFullFormContent() {
                 <button
                   type="submit"
                   className={`w-full py-3 px-4 rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer ${
-                    isSubmitting || !admJobId
+                    isSubmitting
                       ? "bg-slate-300 text-slate-500 shadow-none cursor-not-allowed"
                       : "bg-emerald-600 hover:bg-emerald-700"
                   }`}
-                  disabled={isSubmitting || !admJobId}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>

@@ -20,7 +20,6 @@ export async function POST(req: Request) {
       adminName,
     } = body;
 
-    // อ่าน Credentials ของ Service Account จาก Environment Variables
     const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
@@ -63,7 +62,7 @@ export async function POST(req: Request) {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "Sheet1!A:M", // เปลี่ยนชื่อ Sheet ตามของคุณ เช่น 'จ่ายครบ!A:M'
+      range: "full_paid_input!A:M",
       valueInputOption: "USER_ENTERED",
       requestBody: {
         values: [newRow],

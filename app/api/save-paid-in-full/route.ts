@@ -1,25 +1,19 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
-import { Readable } from "stream";
+import { createClient } from "@supabase/supabase-js";
 
-// ฟังก์ชันช่วยจัดรูปแบบ Private Key ให้ถูกต้องตรงตามมาตรฐาน OpenSSL PEM
+// สร้าง Supabase Client สำหรับฝั่ง Server
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""; // แนะนำใช้ Service Role Key เพื่อสิทธิ์ในการอัปโหลดแบบเต็ม
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 function formatPrivateKey(key?: string): string {
   if (!key) return "";
-  
   let formatted = key.trim();
-
-  // ปลดเครื่องหมายคำพูดเปิด-ปิด (ถ้่ามีครอบอยู่)
-  if (
-    (formatted.startsWith('"') && formatted.endsWith('"')) ||
-    (formatted.startsWith("'") && formatted.endsWith("'"))
-  ) {
+  if ((formatted.startsWith('"') && formatted.endsWith('"')) || (formatted.startsWith("'") && formatted.endsWith("'"))) {
     formatted = formatted.slice(1, -1);
   }
-
-  // แปลง literal "\n" เป็น character ขึ้นบรรทัดใหม่จริง
-  formatted = formatted.replace(/\\n/g, "\n");
-
-  return formatted;
+  return formatted.replace(/\\n/g, "\n");
 }
 
 export async function POST(req: Request) {
@@ -42,77 +36,56 @@ export async function POST(req: Request) {
       adminName,
     } = body;
 
-    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const rawPrivateKey = process.env.GOOGLE_PRIVATE_KEY;
-    const privateKey = formatPrivateKey(rawPrivateKey);
-    const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
-    const driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+    let slipPublicUrl = "-";
 
-    if (!clientEmail || !privateKey || !spreadsheetId) {
-      return NextResponse.json(
-        { error: "Google Credentials configured improperly" },
-        { status: 500 }
-      );
-    }
-
-    const auth = new google.auth.JWT({
-      email: clientEmail,
-      key: privateKey,
-      scopes: [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive.file",
-      ],
-    });
-
-    let slipDriveUrl = "-";
-
-    // 1. อัปโหลดรูปสลิปขึ้น Google Drive
+    // --- 1. อัปโหลดรูปสลิปขึ้น Supabase Storage (ถ้ามีแนบไฟล์มา) ---
     if (slipBase64) {
-      const drive = google.drive({ version: "v3", auth });
-
       const matches = slipBase64.match(/^data:(.+);base64,(.+)$/);
       const mimeType = matches ? matches[1] : "image/jpeg";
       const base64Data = matches ? matches[2] : slipBase64;
       const buffer = Buffer.from(base64Data, "base64");
 
-      const fileMetadata: any = {
-        name: `Slip_${product}_${Date.now()}_${slipFileName || "image.jpg"}`,
-      };
+      const fileExt = slipFileName ? slipFileName.split('.').pop() : "jpg";
+      const fileName = `slip_${product}_${Date.now()}.${fileExt}`;
+      const filePath = `slips/${fileName}`;
 
-      if (driveFolderId) {
-        fileMetadata.parents = [driveFolderId];
-      }
-
-      const media = {
-        mimeType: mimeType,
-        body: Readable.from(buffer),
-      };
-
-      const driveFile = await drive.files.create({
-        requestBody: fileMetadata,
-        media: media,
-        fields: "id, webViewLink",
-      });
-
-      if (driveFile.data.id) {
-        await drive.permissions.create({
-          fileId: driveFile.data.id,
-          requestBody: {
-            role: "reader",
-            type: "anyone",
-          },
+      // อัปโหลดไฟล์เข้า Bucket ที่ชื่อว่า "payment-slips"
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("payment-slips")
+        .upload(filePath, buffer, {
+          contentType: mimeType,
+          upsert: true,
         });
+
+      if (uploadError) {
+        throw new Error("Supabase Upload Error: " + uploadError.message);
       }
 
-      slipDriveUrl = driveFile.data.webViewLink || "-";
+      // ดึง Public URL ของรูปภาพ
+      const { data: publicUrlData } = supabase.storage
+        .from("payment-slips")
+        .getPublicUrl(filePath);
+
+      slipPublicUrl = publicUrlData.publicUrl || "-";
     }
 
-    // 2. บันทึกข้อมูลลง Google Sheets แท็บ full_paid_input
-    const sheets = google.sheets({ version: "v4", auth });
+    // --- 2. บันทึกข้อมูลทั้งหมดลง Google Sheets ---
+    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY);
+    const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
-    const createdAt = new Date().toLocaleString("th-TH", {
-      timeZone: "Asia/Bangkok",
+    if (!clientEmail || !privateKey || !spreadsheetId) {
+      return NextResponse.json({ error: "Google Credentials configured improperly" }, { status: 500 });
+    }
+
+    const auth = new google.auth.JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
+
+    const sheets = google.sheets({ version: "v4", auth });
+    const createdAt = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
 
     const newRow = [
       createdAt,
@@ -124,7 +97,7 @@ export async function POST(req: Request) {
       deliveryMethod,
       pickupDate,
       shippingAddress,
-      slipDriveUrl,
+      slipPublicUrl, // บันทึก Public URL จาก Supabase Storage ลงในชีต
       transferDate,
       note,
       adminName,
@@ -134,12 +107,10 @@ export async function POST(req: Request) {
       spreadsheetId,
       range: "full_paid_input!A:M",
       valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [newRow],
-      },
+      requestBody: { values: [newRow] },
     });
 
-    return NextResponse.json({ success: true, slipUrl: slipDriveUrl });
+    return NextResponse.json({ success: true, slipUrl: slipPublicUrl });
   } catch (error: any) {
     console.error("Error saving data:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -32,7 +32,7 @@ function PaidInFullFormContent() {
       const currentParams = new URLSearchParams(window.location.search);
       currentParams.set("goto", window.location.pathname);
       window.location.href =
-        "https://hheng-system.vercel.app/liff-router?" +
+        "https://heng-input.vercel.app/" +
         currentParams.toString();
       return;
     }

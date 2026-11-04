@@ -11,7 +11,7 @@ function PaidInFullFormContent() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form Fields (ถอด admJobId ออกเรียบร้อยแล้ว)
+  // Form Fields
   const [product, setProduct] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
@@ -46,7 +46,6 @@ function PaidInFullFormContent() {
     const adminName = sessionStorage.getItem("admin_name") || "Unknown";
 
     try {
-      // แปลงไฟล์สลิปเป็น Base64 (ถ้ามี) เพื่อส่งไปยัง API Route ได้ง่ายขึ้น
       let slipBase64 = "";
       let slipFileName = "";
       if (transferSlip) {
@@ -83,8 +82,8 @@ function PaidInFullFormContent() {
       });
 
       if (response.ok) {
-        alert("บันทึกข้อมูลลง Google Sheets สำเร็จ!");
-        // รีเซ็ตฟอร์ม
+        alert("บันทึกข้อมูลและอัปโหลดสลิปเรียบร้อยแล้ว!");
+        // Reset Form
         setProduct("");
         setCustomerName("");
         setCompanyPhone("");
@@ -109,7 +108,6 @@ function PaidInFullFormContent() {
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4">
       <div className="max-w-xl mx-auto">
-        {/* Header จ่ายครบ */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-900">ฟอร์มจ่ายครบ</h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -117,7 +115,6 @@ function PaidInFullFormContent() {
           </p>
         </div>
 
-        {/* Form Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -249,11 +246,11 @@ function PaidInFullFormContent() {
                 </div>
               )}
 
-              {/* Transfer Slip & Date */}
+              {/* Transfer Slip (ปรับแต่งเปิดกล้องได้บนมือถือ) & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    สลิปโอนเงิน (ถ้ามี)
+                    สลิปโอนเงิน (ถ่ายรูป/แนบไฟล์)
                   </label>
                   <input
                     type="file"

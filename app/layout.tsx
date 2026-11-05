@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Admin Redeem & LIFF",
+  title: "Admin Form System",
   description: "Verify admin invite code with LINE LIFF and Google Sheets",
 };
 

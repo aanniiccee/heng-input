@@ -35,7 +35,7 @@ function HomeContent() {
         <div className="flex flex-col gap-3">
           {/* 1. ฟอร์มจ่ายครบ */}
           <Link
-            href={`/admin/full-paid-form${getQueryString()}`}
+            href={`/admin/full-paid${getQueryString()}`}
             className="flex items-center gap-3 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-emerald-600/20 transition-all duration-200 active:scale-[0.98]"
           >
             <CheckCircle2 size={20} className="shrink-0" />

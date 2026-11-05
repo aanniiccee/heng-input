@@ -1,16 +1,20 @@
+// src/app/api/save-paid-in-full/route.ts
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
 import { createClient } from "@supabase/supabase-js";
 
 // สร้าง Supabase Client สำหรับฝั่ง Server
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ""; // แนะนำใช้ Service Role Key เพื่อสิทธิ์ในการอัปโหลดแบบเต็ม
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function formatPrivateKey(key?: string): string {
   if (!key) return "";
   let formatted = key.trim();
-  if ((formatted.startsWith('"') && formatted.endsWith('"')) || (formatted.startsWith("'") && formatted.endsWith("'"))) {
+  if (
+    (formatted.startsWith('"') && formatted.endsWith('"')) ||
+    (formatted.startsWith("'") && formatted.endsWith("'"))
+  ) {
     formatted = formatted.slice(1, -1);
   }
   return formatted.replace(/\\n/g, "\n");
@@ -24,6 +28,7 @@ export async function POST(req: Request) {
       product,
       customerName,
       companyPhone,
+      companyBranch, // รับค่าสาขา (บริษัท) เพิ่มเข้ามา
       sellingPrice,
       channel,
       deliveryMethod,
@@ -45,7 +50,7 @@ export async function POST(req: Request) {
       const base64Data = matches ? matches[2] : slipBase64;
       const buffer = Buffer.from(base64Data, "base64");
 
-      const fileExt = slipFileName ? slipFileName.split('.').pop() : "jpg";
+      const fileExt = slipFileName ? slipFileName.split(".").pop() : "jpg";
       const fileName = `slip_${product}_${Date.now()}.${fileExt}`;
       const filePath = `slips/${fileName}`;
 
@@ -75,7 +80,10 @@ export async function POST(req: Request) {
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
     if (!clientEmail || !privateKey || !spreadsheetId) {
-      return NextResponse.json({ error: "Google Credentials configured improperly" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Google Credentials configured improperly" },
+        { status: 500 }
+      );
     }
 
     const auth = new google.auth.JWT({
@@ -85,19 +93,24 @@ export async function POST(req: Request) {
     });
 
     const sheets = google.sheets({ version: "v4", auth });
-    const createdAt = new Date().toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+    const createdAt = new Date().toLocaleString("th-TH", {
+      timeZone: "Asia/Bangkok",
+    });
 
+    // เรียงคอลัมน์ทั้ง 14 คอลัมน์ตรงตามที่กำหนด:
+    // createdAt | product | customerName | companyPhone (phoneNumber) | companyBranch | sellingPrice | channel | deliveryMethod | pickupDate | shippingAddress | slipPublicUrl (slipFileName) | transferDate | note | adminName
     const newRow = [
       createdAt,
       product,
       customerName,
       companyPhone,
+      companyBranch,
       sellingPrice,
       channel,
       deliveryMethod,
       pickupDate,
       shippingAddress,
-      slipPublicUrl, // บันทึก Public URL จาก Supabase Storage ลงในชีต
+      slipPublicUrl,
       transferDate,
       note,
       adminName,
@@ -105,7 +118,7 @@ export async function POST(req: Request) {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "full_paid_input!A:M",
+      range: "full_paid_input!A:N", // ขยาย range เป็น A:N สำหรับ 14 คอลัมน์
       valueInputOption: "USER_ENTERED",
       requestBody: { values: [newRow] },
     });

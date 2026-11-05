@@ -1,3 +1,4 @@
+// src/app/redeem/page.tsx (หรือไฟล์หน้าตรวจสอบสิทธิ์ของคุณ)
 'use client';
 
 import { useEffect, useState, useRef, Suspense } from 'react';
@@ -49,6 +50,20 @@ function RedeemContent() {
     if (isVerifying.current) return;
     isVerifying.current = true;
 
+    // 🚀 เช็กจาก Session ก่อน ถ้าเคยยืนยันตัวตนแล้ว ดีดเข้าหน้าแอดมินทันทีแบบไม่รอ LIFF
+    const verified = sessionStorage.getItem('admin_verified');
+    const savedLineId = sessionStorage.getItem('admin_line_id');
+    const urlToken = searchParams.get('token');
+
+    if (verified === 'true' && savedLineId) {
+      const params = new URLSearchParams();
+      if (urlToken) params.set('token', urlToken);
+      params.set('admin_line_id', savedLineId);
+      
+      window.location.replace(`/admin?${params.toString()}`);
+      return;
+    }
+
     const code = extractInviteCode();
 
     const initLiffAndVerify = async () => {
@@ -87,14 +102,18 @@ function RedeemContent() {
           sessionStorage.setItem('admin_line_id', userProfile.userId);
           sessionStorage.setItem('admin_name', userProfile.displayName);
           
-          // 2. เคลียร์ Query Parameter ออกจาก URL ทันทีไม่ให้ติด Code เดิมค้าง
+          // 2. เคลียร์ Query Parameter ออกจาก URL ทันที
           if (typeof window !== 'undefined') {
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
           }
 
-          // 3. พา Redirect ไปหน้า admin
-          window.location.href = '/admin';
+          // 3. พา Redirect ไปหน้า admin พร้อมแนบพารามิเตอร์ที่จำเป็น
+          const params = new URLSearchParams();
+          if (urlToken) params.set('token', urlToken);
+          params.set('admin_line_id', userProfile.userId);
+
+          window.location.replace(`/admin?${params.toString()}`);
         } else {
           setUnauthorized(true);
           setLoading(false);

@@ -28,7 +28,7 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center sm:items-start sm:pt-20 p-4 font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center pt-12 sm:pt-16 p-4 font-sans">
       <div className="w-full max-w-xs bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
         <h2 className="text-xl font-bold text-slate-900 text-center mb-6">Shop System</h2>
 

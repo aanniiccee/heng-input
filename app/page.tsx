@@ -93,8 +93,8 @@ function RedeemContent() {
             window.history.replaceState({}, document.title, cleanUrl);
           }
 
-          // 3. พา Redirect ไปหน้า Form
-          window.location.href = '/admin/full-paid-form';
+          // 3. พา Redirect ไปหน้า admin
+          window.location.href = '/admin';
         } else {
           setUnauthorized(true);
           setLoading(false);

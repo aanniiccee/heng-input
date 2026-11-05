@@ -220,24 +220,32 @@ function InstallmentFormContent() {
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                     จำนวนงวด <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    min="1"
-                    list="installment-options"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                    required
-                    placeholder="พิมพ์หรือคลิกเลือกจำนวนงวด"
-                    value={installments}
-                    onChange={(e) => setInstallments(e.target.value)}
-                  />
-                  <datalist id="installment-options">
-                    <option value="3">3 งวด</option>
-                    <option value="4">4 งวด</option>
-                    <option value="5">5 งวด</option>
-                    <option value="6">6 งวด</option>
-                    <option value="9">9 งวด</option>
-                    <option value="12">12 งวด</option>
-                  </datalist>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="1"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 pr-10 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                      required
+                      placeholder="เลือกหรือพิมพ์จำนวนงวด"
+                      value={installments}
+                      onChange={(e) => setInstallments(e.target.value)}
+                    />
+                    <select
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-transparent text-slate-400 hover:text-slate-600 border-0 focus:ring-0 cursor-pointer py-1 text-xs"
+                      onChange={(e) => {
+                        if (e.target.value) setInstallments(e.target.value);
+                      }}
+                      value=""
+                    >
+                      <option value="" disabled>▼</option>
+                      <option value="3">3 งวด</option>
+                      <option value="4">4 งวด</option>
+                      <option value="5">5 งวด</option>
+                      <option value="6">6 งวด</option>
+                      <option value="9">9 งวด</option>
+                      <option value="12">12 งวด</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 

@@ -217,34 +217,55 @@ function InstallmentFormContent() {
                   />
                 </div>
                 <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-600">
+                      จำนวนงวด <span className="text-red-500">*</span>
+                    </label>
+                    {/* ปุ่มเลือกด่วนแบบวงกลม วางไว้ระดับเดียวกับหัวข้อด้านขวา */}
+                    <div className="flex items-center gap-1">
+                      {["3", "4", "5", "6", "9", "12"].map((num) => (
+                        <button
+                          key={num}
+                          type="button"
+                          onClick={() => setInstallments(num)}
+                          className={`w-6 h-6 text-[11px] font-medium rounded-full flex items-center justify-center transition cursor-pointer ${
+                            installments === num
+                              ? "bg-violet-600 text-white shadow-xs"
+                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    required
+                    placeholder="ระบุหรือเลือกจำนวนงวด"
+                    value={installments}
+                    onChange={(e) => setInstallments(e.target.value)}
+                  />
+                </div>
+                {/* <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                     จำนวนงวด <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
-                    <select
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition appearance-none cursor-pointer"
-                      required
-                      value={["3", "4", "5", "6", "9", "12"].includes(installments) ? installments : "custom"}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val !== "custom") {
-                          setInstallments(val);
-                        }
-                      }}
-                    >
-                      <option value="3">3 งวด</option>
-                      <option value="4">4 งวด</option>
-                      <option value="5">5 งวด</option>
-                      <option value="6">6 งวด</option>
-                      <option value="9">9 งวด</option>
-                      <option value="12">12 งวด</option>
-                    </select>
-                    {/* ลูกศรเดี่ยวอันเดียวตรงมุมขวา แบบคลีน ๆ */}
-                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">
-                      ▼
-                    </div>
-                  </div>
-                </div>
+                  <select
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
+                    value={installments}
+                    onChange={(e) => setInstallments(e.target.value)}
+                  >
+                    <option value="3">3 งวด</option>
+                    <option value="4">4 งวด</option>
+                    <option value="5">5 งวด</option>
+                    <option value="6">6 งวด</option>
+                    <option value="9">9 งวด</option>
+                    <option value="12">12 งวด</option>
+                  </select>
+                </div> */}
               </div>
 
               {/* Channel & Delivery Method */}

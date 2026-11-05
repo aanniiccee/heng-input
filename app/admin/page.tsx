@@ -1,5 +1,4 @@
-// src/app/page.tsx
-"export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

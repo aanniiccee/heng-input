@@ -28,7 +28,7 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-12 sm:pt-20 px-4 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-16 sm:pt-24 px-4 font-sans">
       <div className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
         <h2 className="text-xl font-bold text-slate-900 text-center mb-6">Shop System</h2>
 
@@ -47,7 +47,7 @@ function HomeContent() {
             href={`/admin/deposit${getQueryString()}`}
             className="flex items-center gap-3 w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all duration-200 active:scale-[0.98]"
           >
-            <PiggyBank size={20} className="shrink-0" />
+            <PiggyBank size20 className="shrink-0" />
             <span className="text-sm">ฟอร์มรับมัดจำ</span>
           </Link>
 

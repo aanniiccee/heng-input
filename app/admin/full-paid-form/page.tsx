@@ -256,6 +256,11 @@ function PaidInFullFormContent() {
                     type="date"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                     value={pickupDate}
+                    onClick={(e) => {
+                      if (typeof e.currentTarget.showPicker === "function") {
+                        e.currentTarget.showPicker();
+                      }
+                    }}
                     onChange={(e) => setPickupDate(e.target.value)}
                   />
                 </div>
@@ -299,6 +304,11 @@ function PaidInFullFormContent() {
                     type="date"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                     value={transferDate}
+                    onClick={(e) => {
+                      if (typeof e.currentTarget.showPicker === "function") {
+                        e.currentTarget.showPicker();
+                      }
+                    }}
                     onChange={(e) => setTransferDate(e.target.value)}
                   />
                 </div>

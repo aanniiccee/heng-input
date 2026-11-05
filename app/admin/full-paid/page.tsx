@@ -15,8 +15,8 @@ function PaidInFullFormContent() {
   // Form Fields
   const [product, setProduct] = useState("");
   const [customerName, setCustomerName] = useState("");
-  const [companyPhone, setCompanyPhone] = useState("");
-  const [companyBranch, setCompanyBranch] = useState(""); // เพิ่ม State สำหรับสาขา (บริษัท)
+  const [phoneNumber, setPhoneNumber] = useState(""); // เปลี่ยนจาก companyPhone เป็น phoneNumber
+  const [companyBranch, setCompanyBranch] = useState(""); 
   const [sellingPrice, setSellingPrice] = useState("");
   const [channel, setChannel] = useState("หน้าร้าน");
   const [deliveryMethod, setDeliveryMethod] = useState("หน้าร้าน");
@@ -82,8 +82,8 @@ function PaidInFullFormContent() {
       const payload = {
         product,
         customerName,
-        companyPhone,
-        companyBranch, // ส่งค่าสาขาไปด้วย
+        phoneNumber, // ใช้ phoneNumber
+        companyBranch,
         sellingPrice,
         channel,
         deliveryMethod,
@@ -108,7 +108,7 @@ function PaidInFullFormContent() {
         // Reset Form
         setProduct("");
         setCustomerName("");
-        setCompanyPhone("");
+        setPhoneNumber(""); // รีเซ็ต phoneNumber
         setCompanyBranch("");
         setSellingPrice("");
         setPickupDate("");
@@ -196,8 +196,8 @@ function PaidInFullFormContent() {
                     type="text"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                     placeholder="ระบุเบอร์โทรศัพท์"
-                    value={companyPhone}
-                    onChange={(e) => setCompanyPhone(e.target.value)}
+                    value={phoneNumber} // ใช้ phoneNumber
+                    onChange={(e) => setPhoneNumber(e.target.value)} // ใช้ setPhoneNumber
                   />
                 </div>
                 <div>
@@ -214,7 +214,7 @@ function PaidInFullFormContent() {
                 </div>
               </div>
 
-              {/* Selling Price (ย้ายมาอยู่แถวถัดมา หรือจับคู่กับช่องอื่นตามต้องการ) */}
+              {/* Selling Price */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   ราคาขาย (บาท) <span className="text-red-500">*</span>

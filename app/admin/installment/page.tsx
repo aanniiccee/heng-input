@@ -220,31 +220,39 @@ function InstallmentFormContent() {
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                     จำนวนงวด <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    min="1"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition mb-2"
-                    required
-                    placeholder="ระบุหรือเลือกจำนวนงวด"
-                    value={installments}
-                    onChange={(e) => setInstallments(e.target.value)}
-                  />
-                  {/* ปุ่มเลือกจำนวนงวดแบบวงกลม/ปุ่มกลมด้านล่าง */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {["3", "4", "5", "6", "9", "12"].map((num) => (
-                      <button
-                        key={num}
-                        type="button"
-                        onClick={() => setInstallments(num)}
-                        className={`px-3 py-1 text-xs font-medium rounded-full border transition cursor-pointer ${
-                          installments === num
-                            ? "bg-violet-600 text-white border-violet-600 shadow-sm"
-                            : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                        }`}
-                      >
-                        {num} งวด
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Dropdown เลือกด่วน */}
+                    <select
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
+                      value={["3", "4", "5", "6", "9", "12"].includes(installments) ? installments : "custom"}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val !== "custom") {
+                          setInstallments(val);
+                        } else {
+                          setInstallments(""); // เคลียร์เพื่อให้พิมพ์เอง
+                        }
+                      }}
+                    >
+                      <option value="3">3 งวด</option>
+                      <option value="4">4 งวด</option>
+                      <option value="5">5 งวด</option>
+                      <option value="6">6 งวด</option>
+                      <option value="9">9 งวด</option>
+                      <option value="12">12 งวด</option>
+                      <option value="custom">✍️ กำหนดเอง (Custom)</option>
+                    </select>
+
+                    {/* ช่องกรอกตัวเลข (จะแสดงเมื่อเลือก Custom หรือเมื่อพิมพ์เอง) */}
+                    <input
+                      type="number"
+                      min="1"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                      required
+                      placeholder="ระบุจำนวนงวด"
+                      value={installments}
+                      onChange={(e) => setInstallments(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>

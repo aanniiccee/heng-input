@@ -1,9 +1,9 @@
+// src/app/admin/full-paid-form/page.tsx
 "use client";
 
 export const dynamic = "force-dynamic";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { Save, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 
 function PaidInFullFormContent() {
@@ -39,13 +39,15 @@ function PaidInFullFormContent() {
     }
   }, [token]);
 
-  const getQueryString = () => {
+  // ฟังก์ชันพาเปลี่ยนหน้าแบบด่วน (เร็วกว่า Next Link)
+  const handleBackToHome = () => {
     const params = new URLSearchParams();
     if (token) params.set("token", token);
     const adminLineId = sessionStorage.getItem("admin_line_id");
     if (adminLineId) params.set("admin_line_id", adminLineId);
-    const str = params.toString();
-    return str ? `?${str}` : "";
+    const queryString = params.toString() ? `?${params.toString()}` : "";
+    
+    window.location.href = `/${queryString}`;
   };
 
   const handleFormSubmit = async (event: React.FormEvent) => {
@@ -118,15 +120,6 @@ function PaidInFullFormContent() {
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4">
       <div className="max-w-xl mx-auto">
-        <div className="mb-4">
-          <Link
-            href={`/${getQueryString()}`}
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-xs transition"
-          >
-            <ArrowLeft size={16} />
-            <span>กลับหน้าเมนูหลัก</span>
-          </Link>
-        </div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-900">ฟอร์มจ่ายครบ</h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -135,11 +128,22 @@ function PaidInFullFormContent() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          
+          {/* Header Bar: อยู่บรรทัดเดียวกันกับปุ่มย้อนกลับฝั่งขวา */}
           <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <CheckCircle2 size={20} className="text-emerald-400" />
-              <span className="font-semibold">แบบฟอร์มข้อมูลการจ่ายครบ</span>
+              <span className="font-semibold text-sm">แบบฟอร์มข้อมูลการจ่ายครบ</span>
             </div>
+            
+            <button
+              type="button"
+              onClick={handleBackToHome}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition cursor-pointer"
+            >
+              <ArrowLeft size={14} />
+              <span>กลับเมนูหลัก</span>
+            </button>
           </div>
 
           <div className="p-6">
@@ -265,7 +269,7 @@ function PaidInFullFormContent() {
                 </div>
               )}
 
-              {/* Transfer Slip (ปรับแต่งเปิดกล้องได้บนมือถือ) & Date */}
+              {/* Transfer Slip & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">

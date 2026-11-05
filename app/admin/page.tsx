@@ -28,15 +28,15 @@ function HomeContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-16 sm:pt-24 px-4 font-sans">
-      <div className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center sm:items-start sm:pt-20 p-4 font-sans">
+      <div className="w-full max-w-xs bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
         <h2 className="text-xl font-bold text-slate-900 text-center mb-6">Shop System</h2>
 
         <div className="flex flex-col gap-3">
           {/* 1. ฟอร์มจ่ายครบ */}
           <Link
             href={`/admin/full-paid-form${getQueryString()}`}
-            className="flex items-center gap-3 w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-emerald-600/20 transition-all duration-200 active:scale-[0.98]"
+            className="flex items-center gap-3 w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl shadow-lg shadow-emerald-600/20 transition-all duration-200 active:scale-[0.98]"
           >
             <CheckCircle2 size={20} className="shrink-0" />
             <span className="text-sm">ฟอร์มจ่ายครบ</span>
@@ -45,16 +45,16 @@ function HomeContent() {
           {/* 2. ฟอร์มรับมัดจำ */}
           <Link
             href={`/admin/deposit${getQueryString()}`}
-            className="flex items-center gap-3 w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all duration-200 active:scale-[0.98]"
+            className="flex items-center gap-3 w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all duration-200 active:scale-[0.98]"
           >
-            <PiggyBank size20 className="shrink-0" />
+            <PiggyBank size={20} className="shrink-0" />
             <span className="text-sm">ฟอร์มรับมัดจำ</span>
           </Link>
 
           {/* 3. ฟอร์มผ่อน / ออม */}
           <Link
             href={`/admin/installment${getQueryString()}`}
-            className="flex items-center gap-3 w-full py-3.5 px-4 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-xl shadow-lg shadow-violet-600/20 transition-all duration-200 active:scale-[0.98]"
+            className="flex items-center gap-3 w-full py-3 px-4 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-xl shadow-lg shadow-violet-600/20 transition-all duration-200 active:scale-[0.98]"
           >
             <CreditCard size={20} className="shrink-0" />
             <span className="text-sm">ฟอร์มผ่อน / ออม</span>

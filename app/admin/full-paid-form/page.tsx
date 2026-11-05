@@ -29,24 +29,30 @@ function PaidInFullFormContent() {
     const adminName = sessionStorage.getItem("admin_name");
     const adminLineId = sessionStorage.getItem("admin_line_id");
 
-    if (!adminName || !adminLineId) {
-      const currentParams = new URLSearchParams(window.location.search);
-      currentParams.set("goto", window.location.pathname);
-      window.location.href =
-        "https://heng-input.vercel.app/?" +
-        currentParams.toString();
+    if (adminName && adminLineId) {
       return;
     }
-  }, [token]);
 
-  // ฟังก์ชันพาเปลี่ยนหน้าแบบด่วน (เร็วกว่า Next Link)
+    const urlToken = searchParams.get("token");
+    if (urlToken) {
+      return;
+    }
+
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.set("goto", window.location.pathname);
+    window.location.href =
+      "https://heng-input.vercel.app/?" + currentParams.toString();
+  }, [searchParams]);
+
+  // ฟังก์ชันพาเปลี่ยนหน้ากลับเมนูหลักแบบด่วนทันที
   const handleBackToHome = () => {
     const params = new URLSearchParams();
     if (token) params.set("token", token);
+    
     const adminLineId = sessionStorage.getItem("admin_line_id");
     if (adminLineId) params.set("admin_line_id", adminLineId);
-    const queryString = params.toString() ? `?${params.toString()}` : "";
     
+    const queryString = params.toString() ? `?${params.toString()}` : "";
     window.location.href = `/${queryString}`;
   };
 
@@ -120,30 +126,33 @@ function PaidInFullFormContent() {
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4">
       <div className="max-w-xl mx-auto">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900">ฟอร์มจ่ายครบ</h2>
-          <p className="text-xs text-slate-500 mt-1">
-            บันทึกข้อมูลการชำระเงินครบถ้วนและรายละเอียดการส่งมอบ
-          </p>
+        
+        {/* หัวข้อหลัก + ปุ่มย้อนกลับ อยู่ในกรอบความกว้างของฟอร์มพอดี */}
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">ฟอร์มจ่ายครบ</h2>
+            <p className="text-xs text-slate-500 mt-1">
+              บันทึกข้อมูลการชำระเงินครบถ้วนและรายละเอียดการส่งมอบ
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleBackToHome}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl shadow-xs transition cursor-pointer shrink-0"
+          >
+            <ArrowLeft size={15} />
+            <span>กลับเมนูหลัก</span>
+          </button>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           
-          {/* Header Bar: อยู่บรรทัดเดียวกันกับปุ่มย้อนกลับฝั่งขวา */}
           <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <CheckCircle2 size={20} className="text-emerald-400" />
               <span className="font-semibold text-sm">แบบฟอร์มข้อมูลการจ่ายครบ</span>
             </div>
-            
-            <button
-              type="button"
-              onClick={handleBackToHome}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition cursor-pointer"
-            >
-              <ArrowLeft size={14} />
-              <span>กลับเมนูหลัก</span>
-            </button>
           </div>
 
           <div className="p-6">

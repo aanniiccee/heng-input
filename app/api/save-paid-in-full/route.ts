@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const {
       product,
       customerName,
-      companyPhone,
+      phoneNumber,
       companyBranch, // รับค่าสาขา (บริษัท) เพิ่มเข้ามา
       sellingPrice,
       channel,
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
       createdAt,
       product,
       customerName,
-      companyPhone,
+      phoneNumber,
       companyBranch,
       sellingPrice,
       channel,

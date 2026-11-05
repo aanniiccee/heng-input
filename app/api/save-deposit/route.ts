@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const {
       product,
       customerName,
-      companyPhone, // phoneNumber
+      phoneNumber, // phoneNumber
       sellingPrice,
       depositAmount,
       remainingDueDate, // dueDate
@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       createdAt,
       product,
       customerName,
-      companyPhone,
+      phoneNumber,
       sellingPrice,
       depositAmount,
       remainingDueDate,

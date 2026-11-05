@@ -1,22 +1,24 @@
-// src/app/admin/full-paid-form/page.tsx
+// src/app/admin/deposit/page.tsx
 "use client";
 
 export const dynamic = "force-dynamic";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Save, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Save, Loader2, PiggyBank, ArrowLeft } from "lucide-react";
 
-function PaidInFullFormContent() {
+function DepositFormContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form Fields
+  // Form Fields สำหรับฟอร์มรับมัดจำ
   const [product, setProduct] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
+  const [depositAmount, setDepositAmount] = useState(""); // เพิ่ม: ยอดมัดจำ
+  const [remainingDueDate, setRemainingDueDate] = useState(""); // เพิ่ม: วันที่ครบกำหนดจ่ายส่วนที่เหลือ
   const [channel, setChannel] = useState("หน้าร้าน");
   const [deliveryMethod, setDeliveryMethod] = useState("หน้าร้าน");
   const [pickupDate, setPickupDate] = useState("");
@@ -83,6 +85,8 @@ function PaidInFullFormContent() {
         customerName,
         companyPhone,
         sellingPrice,
+        depositAmount,
+        remainingDueDate,
         channel,
         deliveryMethod,
         pickupDate: deliveryMethod === "หน้าร้าน" ? pickupDate : "",
@@ -95,19 +99,21 @@ function PaidInFullFormContent() {
         adminLineId,
       };
 
-      const response = await fetch("/api/save-paid-in-full", {
+      const response = await fetch("/api/save-deposit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (response.ok) {
-        alert("บันทึกข้อมูลและอัปโหลดสลิปเรียบร้อยแล้ว!");
+        alert("บันทึกข้อมูลการรับมัดจำและอัปโหลดสลิปเรียบร้อยแล้ว!");
         // Reset Form
         setProduct("");
         setCustomerName("");
         setCompanyPhone("");
         setSellingPrice("");
+        setDepositAmount("");
+        setRemainingDueDate("");
         setPickupDate("");
         setShippingAddress("");
         setTransferSlip(null);
@@ -146,7 +152,7 @@ function PaidInFullFormContent() {
           
           <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 size={20} className="text-emerald-400" />
+              <PiggyBank size={20} className="text-blue-400" />
               <span className="font-semibold text-sm">แบบฟอร์มข้อมูลการรับมัดจำ</span>
             </div>
           </div>
@@ -183,20 +189,22 @@ function PaidInFullFormContent() {
                 </div>
               </div>
 
-              {/* Company Phone & Selling Price */}
+              {/* Company Phone */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  เบอร์โทรศัพท์ (บริษัท) ของบิลขาย
+                </label>
+                <input
+                  type="text"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                  placeholder="ระบุเบอร์โทรศัพท์"
+                  value={companyPhone}
+                  onChange={(e) => setCompanyPhone(e.target.value)}
+                />
+              </div>
+
+              {/* Selling Price & Deposit Amount */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    เบอร์โทรศัพท์สาขา (บริษัท) ของบิลขาย
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                    placeholder="เลขบัญชีโอนเข้า / เบอร์สาขา"
-                    value={companyPhone}
-                    onChange={(e) => setCompanyPhone(e.target.value)}
-                  />
-                </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                     ราคาขาย (บาท) <span className="text-red-500">*</span>
@@ -211,6 +219,39 @@ function PaidInFullFormContent() {
                     onChange={(e) => setSellingPrice(e.target.value)}
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    ยอดมัดจำ (บาท) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    required
+                    placeholder="0.00"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Remaining Due Date */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  วันที่ครบกำหนดจ่ายส่วนที่เหลือ <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
+                  required
+                  value={remainingDueDate}
+                  onClick={(e) => {
+                    if (typeof e.currentTarget.showPicker === "function") {
+                      e.currentTarget.showPicker();
+                    }
+                  }}
+                  onChange={(e) => setRemainingDueDate(e.target.value)}
+                />
               </div>
 
               {/* Channel & Delivery Method */}
@@ -254,7 +295,7 @@ function PaidInFullFormContent() {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
                     value={pickupDate}
                     onClick={(e) => {
                       if (typeof e.currentTarget.showPicker === "function") {
@@ -302,7 +343,7 @@ function PaidInFullFormContent() {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
                     value={transferDate}
                     onClick={(e) => {
                       if (typeof e.currentTarget.showPicker === "function") {
@@ -332,10 +373,10 @@ function PaidInFullFormContent() {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className={`w-full py-3 px-4 rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition cursor-pointer ${
+                  className={`w-full py-3 px-4 rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition cursor-pointer ${
                     isSubmitting
                       ? "bg-slate-300 text-slate-500 shadow-none cursor-not-allowed"
-                      : "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-blue-600 hover:bg-blue-700"
                   }`}
                   disabled={isSubmitting}
                 >
@@ -358,7 +399,7 @@ function PaidInFullFormContent() {
   );
 }
 
-export default function PaidInFullFormPage() {
+export default function DepositFormPage() {
   return (
     <Suspense
       fallback={
@@ -367,7 +408,7 @@ export default function PaidInFullFormPage() {
         </div>
       }
     >
-      <PaidInFullFormContent />
+      <DepositFormContent />
     </Suspense>
   );
 }

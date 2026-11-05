@@ -22,7 +22,9 @@ function PaidInFullFormContent() {
   const [pickupDate, setPickupDate] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
   const [transferSlip, setTransferSlip] = useState<File | null>(null);
-  const [transferDate, setTransferDate] = useState("");
+  const [transferDate, setTransferDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -109,7 +111,7 @@ function PaidInFullFormContent() {
         setPickupDate("");
         setShippingAddress("");
         setTransferSlip(null);
-        setTransferDate("");
+        setTransferDate(new Date().toISOString().split("T")[0]);
         setNote("");
       } else {
         const err = await response.json();

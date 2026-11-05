@@ -3,7 +3,8 @@
 export const dynamic = "force-dynamic";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Save, Loader2, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { Save, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 
 function PaidInFullFormContent() {
   const searchParams = useSearchParams();
@@ -37,6 +38,15 @@ function PaidInFullFormContent() {
       return;
     }
   }, [token]);
+
+  const getQueryString = () => {
+    const params = new URLSearchParams();
+    if (token) params.set("token", token);
+    const adminLineId = sessionStorage.getItem("admin_line_id");
+    if (adminLineId) params.set("admin_line_id", adminLineId);
+    const str = params.toString();
+    return str ? `?${str}` : "";
+  };
 
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -108,6 +118,15 @@ function PaidInFullFormContent() {
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4">
       <div className="max-w-xl mx-auto">
+        <div className="mb-4">
+          <Link
+            href={`/${getQueryString()}`}
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-2 rounded-xl shadow-xs transition"
+          >
+            <ArrowLeft size={16} />
+            <span>กลับหน้าเมนูหลัก</span>
+          </Link>
+        </div>
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-slate-900">ฟอร์มจ่ายครบ</h2>
           <p className="text-xs text-slate-500 mt-1">

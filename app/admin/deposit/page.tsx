@@ -15,10 +15,10 @@ function DepositFormContent() {
   // Form Fields สำหรับฟอร์มรับมัดจำ
   const [product, setProduct] = useState("");
   const [customerName, setCustomerName] = useState("");
-  const [companyPhone, setCompanyPhone] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState(""); // เปลี่ยนจาก companyPhone เป็น phoneNumber
   const [sellingPrice, setSellingPrice] = useState("");
-  const [depositAmount, setDepositAmount] = useState(""); // เพิ่ม: ยอดมัดจำ
-  const [remainingDueDate, setRemainingDueDate] = useState(""); // เพิ่ม: วันที่ครบกำหนดจ่ายส่วนที่เหลือ
+  const [depositAmount, setDepositAmount] = useState("");
+  const [remainingDueDate, setRemainingDueDate] = useState("");
   const [channel, setChannel] = useState("หน้าร้าน");
   const [deliveryMethod, setDeliveryMethod] = useState("หน้าร้าน");
   const [pickupDate, setPickupDate] = useState("");
@@ -83,7 +83,7 @@ function DepositFormContent() {
       const payload = {
         product,
         customerName,
-        companyPhone,
+        phoneNumber, // ใช้ phoneNumber
         sellingPrice,
         depositAmount,
         remainingDueDate,
@@ -110,7 +110,7 @@ function DepositFormContent() {
         // Reset Form
         setProduct("");
         setCustomerName("");
-        setCompanyPhone("");
+        setPhoneNumber(""); // รีเซ็ต phoneNumber
         setSellingPrice("");
         setDepositAmount("");
         setRemainingDueDate("");
@@ -189,17 +189,17 @@ function DepositFormContent() {
                 </div>
               </div>
 
-              {/* Company Phone */}
+              {/* Phone Number */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  เบอร์โทรศัพท์ (บริษัท) ของบิลขาย
+                  เบอร์โทรศัพท์
                 </label>
                 <input
                   type="text"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
                   placeholder="ระบุเบอร์โทรศัพท์"
-                  value={companyPhone}
-                  onChange={(e) => setCompanyPhone(e.target.value)}
+                  value={phoneNumber} // ใช้ phoneNumber
+                  onChange={(e) => setPhoneNumber(e.target.value)} // ใช้ setPhoneNumber
                 />
               </div>
 

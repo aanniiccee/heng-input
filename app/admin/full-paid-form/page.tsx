@@ -190,7 +190,7 @@ function PaidInFullFormContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    เบอร์โทรศัพท์ (บริษัท) ของบิลขาย
+                    เบอร์โทรศัพท์
                   </label>
                   <input
                     type="text"
@@ -202,7 +202,7 @@ function PaidInFullFormContent() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    สาขา (บริษัท) ของบิลขาย
+                    สาขา (บริษัท) ของบิลขาย  (เลขบัญชีโอนเข้า)
                   </label>
                   <input
                     type="text"

@@ -16,6 +16,7 @@ function PaidInFullFormContent() {
   const [product, setProduct] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [companyPhone, setCompanyPhone] = useState("");
+  const [companyBranch, setCompanyBranch] = useState(""); // เพิ่ม State สำหรับสาขา (บริษัท)
   const [sellingPrice, setSellingPrice] = useState("");
   const [channel, setChannel] = useState("หน้าร้าน");
   const [deliveryMethod, setDeliveryMethod] = useState("หน้าร้าน");
@@ -82,6 +83,7 @@ function PaidInFullFormContent() {
         product,
         customerName,
         companyPhone,
+        companyBranch, // ส่งค่าสาขาไปด้วย
         sellingPrice,
         channel,
         deliveryMethod,
@@ -107,6 +109,7 @@ function PaidInFullFormContent() {
         setProduct("");
         setCustomerName("");
         setCompanyPhone("");
+        setCompanyBranch("");
         setSellingPrice("");
         setPickupDate("");
         setShippingAddress("");
@@ -183,34 +186,48 @@ function PaidInFullFormContent() {
                 </div>
               </div>
 
-              {/* Company Phone & Selling Price */}
+              {/* แยกเป็น 2 ช่อง: เบอร์โทรศัพท์ และ สาขา (บริษัท) ของบิลขาย */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    เบอร์โทรศัพท์สาขา (บริษัท) ของบิลขาย
+                    เบอร์โทรศัพท์ (บริษัท) ของบิลขาย
                   </label>
                   <input
                     type="text"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                    placeholder="เลขบัญชีโอนเข้า / เบอร์สาขา"
+                    placeholder="ระบุเบอร์โทรศัพท์"
                     value={companyPhone}
                     onChange={(e) => setCompanyPhone(e.target.value)}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                    ราคาขาย (บาท) <span className="text-red-500">*</span>
+                    สาขา (บริษัท) ของบิลขาย
                   </label>
                   <input
-                    type="number"
-                    step="0.01"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-                    required
-                    placeholder="0.00"
-                    value={sellingPrice}
-                    onChange={(e) => setSellingPrice(e.target.value)}
+                    type="text"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    placeholder="ระบุสาขา"
+                    value={companyBranch}
+                    onChange={(e) => setCompanyBranch(e.target.value)}
                   />
                 </div>
+              </div>
+
+              {/* Selling Price (ย้ายมาอยู่แถวถัดมา หรือจับคู่กับช่องอื่นตามต้องการ) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  ราคาขาย (บาท) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-mono text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                  required
+                  placeholder="0.00"
+                  value={sellingPrice}
+                  onChange={(e) => setSellingPrice(e.target.value)}
+                />
               </div>
 
               {/* Channel & Delivery Method */}
@@ -254,7 +271,7 @@ function PaidInFullFormContent() {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
                     value={pickupDate}
                     onClick={(e) => {
                       if (typeof e.currentTarget.showPicker === "function") {
@@ -302,7 +319,7 @@ function PaidInFullFormContent() {
                   </label>
                   <input
                     type="date"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition cursor-pointer"
                     value={transferDate}
                     onClick={(e) => {
                       if (typeof e.currentTarget.showPicker === "function") {

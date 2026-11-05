@@ -94,7 +94,7 @@ function RedeemContent() {
           }
 
           // 3. พา Redirect ไปหน้า Form
-          window.location.href = '/admin/form';
+          window.location.href = '/admin/full-paid-form';
         } else {
           setUnauthorized(true);
           setLoading(false);
